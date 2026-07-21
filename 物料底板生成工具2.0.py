@@ -854,6 +854,9 @@ class MaterialToolApp:
         self.sv_zone = self._make_drop_zone(zones_frame, "商家服务订单", "#d97706", 1, self.on_sv_selected)
         self.vl_zone = self._make_drop_zone(zones_frame, "门店资料 Vlookup", "#16a34a", 2, self.on_vl_selected)
 
+        self._add_template_btn(zones_frame, 0, "问卷结果模版.xlsx")
+        self._add_template_btn(zones_frame, 1, "服务商订单模版.xls")
+
         self.status_label = tk.Label(
             inner, text="请上传「问卷结果」或「商家服务订单」以开始",
             font=("Microsoft JhengHei", 11), bg="#f5f7fa", fg="#334155",
@@ -910,6 +913,10 @@ class MaterialToolApp:
             zones_frame, "费率换签", "#7c3aed", 1, self.on_t2_rs_selected)
         self.t2_pm_zone = self._make_drop_zone(
             zones_frame, "高端物料", "#dc2626", 2, self.on_t2_pm_selected)
+
+        self._add_template_btn(zones_frame, 0, "主动提报模板.xlsx")
+        self._add_template_btn(zones_frame, 1, "费率换签模版.xlsx")
+        self._add_template_btn(zones_frame, 2, "高端模版.xlsx")
 
         self.t2_status_label = tk.Label(
             inner, text="请上传任意一个或多个文件以开始",
@@ -1071,6 +1078,36 @@ class MaterialToolApp:
             stat.value_label.configure(text="0")
         self.t2_warning_label.configure(text="")
         self.t2_export_btn.configure(state="disabled")
+
+    # ---------- 下载模版按钮 ----------
+    def _add_template_btn(self, parent, col, template_name):
+        btn = tk.Button(parent, text="📥 下载模版", font=("Microsoft JhengHei", 8),
+                        bg="white", fg="#64748b", activebackground="#f1f5f9",
+                        relief="solid", bd=1, padx=10, pady=2, cursor="hand2",
+                        command=lambda: self._download_template(template_name))
+        btn.grid(row=1, column=col, pady=(6, 0))
+        return btn
+
+    def _download_template(self, template_name):
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        src = os.path.join(script_dir, template_name)
+        if not os.path.exists(src):
+            messagebox.showerror("模版不存在", f"找不到模版文件：{template_name}\n请确保模版文件与程序在同一目录下。")
+            return
+        ext = os.path.splitext(template_name)[1]
+        save_path = filedialog.asksaveasfilename(
+            title=f"保存 {template_name}",
+            initialfile=template_name,
+            defaultextension=ext,
+            filetypes=[("Excel 文件", "*.xlsx *.xls")])
+        if not save_path:
+            return
+        try:
+            import shutil
+            shutil.copy2(src, save_path)
+            messagebox.showinfo("下载成功", f"模版已保存至：\n{save_path}")
+        except Exception as e:
+            messagebox.showerror("下载失败", str(e))
 
     # ---------- 拖拽区组件 ----------
     def _make_drop_zone(self, parent, label, color, col, on_file_selected):
